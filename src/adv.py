@@ -45,6 +45,10 @@ room['treasure'].s_to = room['narrow']
 # Main
 #
 
+# Commands for directions and actions
+item_actions = ['get', 'take', 'drop']
+directions = ['n', 'e', 's', 'w']
+
 # Make a new player object that is currently in the 'outside' room.
 player = Player("Tiffany", room["outside"])
 
@@ -59,9 +63,6 @@ player = Player("Tiffany", room["outside"])
 #
 # If the user enters "q", quit the game.
 
-print(f"Hi {player.name}! Current Room: {player.current_room.name}")
-print(room['outside'].description)
-print("It looks like there might be some items. Press 'G' to find out!")
 
 # Created Item
 map = Item("map", "With this map, you can easily find your way and see what items are near you!")
@@ -73,67 +74,74 @@ room["treasure"].add_item(gem)
 sword = Item("sword", "This particular sword can cut through diamonds!")
 room["foyer"].add_item(sword)
 
+# Rooms can hold more than one item:
+staff = Item("staff", "A very powderful wizard's staff.")
+room["foyer"].add_item(staff)
+
+
+# Beginning of Game
+print(f"\nHi {player.name}!\nCurrent Room: {player.current_room.name}\n")
+print(room['outside'].description)
+print("""\nIt looks like there's a map here. Type in 'get map' or 'take map' 
+    to add the map to your inventory. To remove the item from your inventory, 
+    type 'drop map'. Go ahead and try!\n""")
+
+# While Loop for functionality
 while True:
-    direction = input(
-    'Where to next? \n  N (north), S (south), E (east), W (west), G (Get Item), D (Drop Item), I (inventory), Q (quit): ').lower().strip()
-    print(direction)
+    # Player Input
+    player_input = input(
+    '\nWhat are you waiting for? Onward!\nN (north), S (south), E (east), W (west),\nget [ITEM], take [ITEM], drop [ITEM], I (inventory), Q (quit): ').lower().split(' ')
 
-    # N-S-E-W == Directions
-    if direction in ["n", "s", "e", "w"]:
-        current_room = player.current_room
-        next_room = getattr(current_room, f"{direction}_to")
+    # Player Input Error Handling
+    if len(player_input) > 2 or len(player_input) < 1:
+        print("Invalid entry. Please try again.")
 
-        if next_room is not None:
-            player.current_room = next_room
-            print(f"You have enetered the {player.current_room}")
+    # Conditionals for actions
+    elif len(player_input) == 2:
+        if player_input[0] in item_actions:
+            if player_input[0] == 'get' or player_input[0] == 'take':
+                item = player.current_room.search_items(player_input[1])
+                if item in player.current_room.items:
+                    player.current_room.drop_item(item)
+                    player.add_item(item)
+                    item.on_take(item)
+                else:
+                    print("\nIt doesn't look like this item exist. Please try again...")
 
-            if current_room.items:
-                print("It looks like this room has the following items: ")
-                for item in player.current_room.items:
-                    print(f"{item}")
-                print("If you want to get these items, press 'G'")
+            elif player_input[0] == 'drop':
+                item = player.search_items(player_input[1])
+                if item in player.inventory:
+                    player.current_room.add_item(item)
+                    player.drop_item(item)
+                    item.on_drop(item)
+                else:
+                    print("\nYou don't have that item in your inventory.")
 
-        else:
-            print("There's nothing in that direction.")
-
-    # G == Get Item
-    elif direction == "g":
-        if not player.current_room.items:
-            print("It looks like there are no items in the room. Let's keep going!")
-
-        else:
-            for item in player.current_room.items:
-                player.pickup(item)
-                # player.current_room.remove_item(item)
-                print(f"Congradulations! You found the following:\n {item}")
-
-    # D == Drop Item
-    elif direction == "d":
-        if player.inventory:
-            drop_item = input("Which of the following items would you like to drop? ")
-            for item in player.inventory:
-                if item.name == drop_item:
-                    player.inventory.remove(item)
-                    print("The item was successfully removed.")
-        elif item.name != drop_item:
-            print("It doesn't look like you have that item.")
-        else:
-            print(f"It looks like {player.name} doesn't haven anything in their inventory.")
-    
-    # I == Inventory
-    elif direction == "i":
-        if player.inventory:
-            print(f"{player.name} has the following in their inventory: ")
-            for items in player.inventory:
-                print(f"{items}")
-        else:
-            print(f"It looks like {player.name} doesn't haven anything in their inventory.")
-
-    # Q == Quit
-    elif direction == "q":
-        print("See you later!")
-        exit()
-
-    # Not a valid entry
     else:
-        print("Don't give up! Let's keep going!")
+        # Conditionals for directions
+        if player_input[0] in directions:
+                try:
+                    player.move_room(player_input[0])
+                    print(f'\nYou are in the {player.current_room.name} - {player.current_room.description}\n')
+                    print(player.current_room)
+                    player.current_room.print_items()
+                except AttributeError:
+                    print("\nThere seems to be no room in that direction. Let's keep searching...")
+
+        # Inventory
+        elif player_input[0] == "i" or player_input[0] == "inventory":
+                if player.inventory:
+                    print(f"\n{player.name}, your inventory contains the foolowing:")
+                    for items in player.inventory:
+                        print(f"{items}")
+                else:
+                    print("\nIt looks like you doesn't haven anything in your inventory.")
+
+        # Quit Game
+        elif player_input[0] == "q":
+                print("\nFarewell!")
+                exit()
+
+        # Error Handling for directionals
+        else:
+                print("\nDon't give up! Let's keep going!")

@@ -1,5 +1,3 @@
-# Write a class to hold player information, e.g. what room they are in
-# currently.
 class Player:
     def __init__(self, name, current_room, inventory = []):
         self.name = name
@@ -12,29 +10,29 @@ class Player:
     def __repr__(self):
         return f"self.name = {self.name} : self.current_room = {self.current_room}"
 
-    # def get_item(self, item):
-    #     # self.current_room.remove_item(item)
-    #     # self.items.append(item)
-    #     # return f"Congradulations! You picked up the {item.name}"
-    #     if item in self.current_room.items:
-    #         self.inventory.append(item)
-    #         print(f"Congradulations! You have the {item.name}!")
-    def pickup(self, item):
-        self.inventory.append(item)
-        # if item in self.current_room.items:
-        #     self.inventory.append(item)
-        # else:
-        #     print("The item is not in the room")
+    def move_room(self, direction):
+        if getattr(self.current_room, f'{direction}_to'):
+            self.current_room = getattr(self.current_room, f'{direction}_to')
+        else:
+            print("\nThere's nothing over this way. Let's try a different direction.\n")
+    
+    def print_items(self):
+        if len(self.inventory) > 0:
+            print('Your current items:\n')
+            for i in self.inventory:
+                print(f'{i.name} - {i.description}')
+        else:
+            print('You have no items - explore the map to find some and add them to your collection!')
 
-    def dropped_item(self, item_name):
+    def search_items(self, item):
         for i in self.inventory:
-            if i.name == item_name:
-                self.inventory.remove(i)
-                return True
-        return False
+            if i.name.lower() == item:
+                return i
+            else:   
+                return None
 
-    def list_inventory(self):
-        if len(self.inventory) < 1:
-            print("You have no inventory.")
-        for item in self.inventory:
-            print(f"{item.name}: {item.description}")
+    def add_item(self, item):
+        self.inventory.append(item)
+
+    def drop_item(self, item):
+        self.inventory.remove(item)
