@@ -107,6 +107,7 @@ while True:
                 if item in player.current_room.items:
                     player.add_current_room_item(item)
 
+                    ### STRETCH - If you find the gem, you win ###
                     if gem in player.inventory:
                         print("You win the game!\nFarewell!")
                         exit()
