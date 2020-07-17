@@ -68,6 +68,7 @@ player = Player("Tiffany", room["outside"])
 map = Item("map", "With this map, you can easily find your way and see what items are near you!")
 room["outside"].add_item(map)
 
+### STRETCH - If you find the gem, you win ###
 gem = Item("ruby", "Useful for wizards and to enhance certain items.")
 room["treasure"].add_item(gem)
 
@@ -99,21 +100,23 @@ while True:
     # Conditionals for actions
     elif len(player_input) == 2:
         if player_input[0] in item_actions:
+
             if player_input[0] == 'get' or player_input[0] == 'take':
                 item = player.current_room.search_items(player_input[1])
+
                 if item in player.current_room.items:
-                    player.current_room.drop_item(item)
-                    player.add_item(item)
-                    item.on_take(item)
+                    player.add_current_room_item(item)
+
+                    if gem in player.inventory:
+                        print("You win the game!\nFarewell!")
+                        exit()
                 else:
                     print("\nIt doesn't look like this item exist. Please try again...")
 
             elif player_input[0] == 'drop':
                 item = player.search_items(player_input[1])
                 if item in player.inventory:
-                    player.current_room.add_item(item)
-                    player.drop_item(item)
-                    item.on_drop(item)
+                    player.remove_player_item(item)
                 else:
                     print("\nYou don't have that item in your inventory.")
 
@@ -130,18 +133,13 @@ while True:
 
         # Inventory
         elif player_input[0] == "i" or player_input[0] == "inventory":
-                if player.inventory:
-                    print(f"\n{player.name}, your inventory contains the foolowing:")
-                    for items in player.inventory:
-                        print(f"{items}")
-                else:
-                    print("\nIt looks like you doesn't haven anything in your inventory.")
+            player.print_items()
 
         # Quit Game
         elif player_input[0] == "q":
-                print("\nFarewell!")
-                exit()
+            print("\nFarewell!")
+            exit()
 
         # Error Handling for directionals
         else:
-                print("\nDon't give up! Let's keep going!")
+            print("\nDon't give up! Let's keep going!")

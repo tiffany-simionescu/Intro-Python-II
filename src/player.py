@@ -1,3 +1,5 @@
+from item import Item
+
 class Player:
     def __init__(self, name, current_room, inventory = []):
         self.name = name
@@ -36,3 +38,13 @@ class Player:
 
     def drop_item(self, item):
         self.inventory.remove(item)
+
+    def add_current_room_item(self, item):
+        self.current_room.drop_item(item)
+        self.add_item(item)
+        item.on_take(item)
+
+    def remove_player_item(self, item):
+        self.current_room.add_item(item)
+        self.drop_item(item)
+        item.on_drop(item)
